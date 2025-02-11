@@ -17,14 +17,22 @@ const validateUser = [
     .withMessage(`Last name ${alphaErr}`)
     .isLength({ min: 1, max: 10 })
     .withMessage(`Last name ${lengthErr}`),
-  body("email").isEmail().withMessage("Try to correct your email following this template: example@test.com"),
+  body("email")
+    .isEmail()
+    .withMessage(
+      "Try to correct your email following this template: example@test.com"
+    ),
   body("age").optional().isInt(),
-  body("bio").optional().isLength({ max: 200 }).withMessage("It seems that your bio has more than 200 letters."),
+  body("bio")
+    .optional()
+    .isLength({ max: 200 })
+    .withMessage("It seems that your bio has more than 200 letters."),
 ];
 
 exports.usersListGet = (req, res) => {
   res.render("index", {
     title: "User List",
+    faultInSearch: "",
     users: usersStorage.getUsers(),
   });
 };
@@ -76,7 +84,13 @@ exports.usersUpdatePost = [
     }
 
     const { firstName, lastName, email, age, bio } = req.body;
-    usersStorage.updateUser(req.params.id, { firstName, lastName, email, age, bio });
+    usersStorage.updateUser(req.params.id, {
+      firstName,
+      lastName,
+      email,
+      age,
+      bio,
+    });
     res.redirect("/");
   },
 ];
@@ -84,4 +98,24 @@ exports.usersUpdatePost = [
 exports.usersDeletePost = (req, res) => {
   usersStorage.deleteUser(req.params.id);
   res.redirect("/");
+};
+
+exports.usersSearch = (req, res) => {
+  const { nameOrEmail } = req.query;
+
+  if (!nameOrEmail) {
+    return res.render("index", {
+      title: "User List",
+      users: usersStorage.getUsers(),
+      faultInSearch:
+        "Sorry, but you need to fill this input to find the users.",
+    });
+  }
+
+  const usersByEmailOrName = usersStorage.getUsersByEmailOrName(nameOrEmail);
+
+  res.render("search", {
+    title: "Search User",
+    users: usersByEmailOrName,
+  });
 };

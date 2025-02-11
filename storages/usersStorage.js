@@ -27,6 +27,18 @@ class UsersStorage {
   deleteUser(id) {
     delete this.storage[id];
   }
+
+  getUsersByEmailOrName(emailOrName) {
+    const users = this.getUsers();
+
+    const usersByName = users.filter(user => {
+      const fullName = user.firstName + user.lastName;
+
+      return fullName === emailOrName.split(" ").join("") || user.email === emailOrName;
+    });
+  
+    return usersByName;
+  }
 }
 
 module.exports = new UsersStorage();
